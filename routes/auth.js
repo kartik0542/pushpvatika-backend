@@ -154,10 +154,16 @@ router.delete("/members/:username", authMiddleware, async (req, res) => {
     }
 
     await User.findOneAndDelete({ username: req.params.username });
-    res.status(200).json({ message: "Member remove ho gaya" });
+
+    // Socket se force logout bhejo
+    res
+      .status(200)
+      .json({
+        message: "Member remove ho gaya",
+        removedUsername: req.params.username,
+      });
   } catch (error) {
     res.status(500).json({ message: "Server error" });
   }
 });
-
 export default router;

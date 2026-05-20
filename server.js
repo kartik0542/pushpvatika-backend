@@ -13,6 +13,7 @@ dotenv.config();
 
 const app = express();
 const httpServer = createServer(app);
+const removedUsers = new Set();
 const io = new Server(httpServer, {
   cors: {
     origin: "*",
@@ -71,6 +72,11 @@ io.on("connection", (socket) => {
 
   socket.on("pinMessage", (data) => {
     io.emit("messagePinned", data);
+  });
+
+  socket.on("userRemoved", (username) => {
+    removedUsers.add(username);
+    io.emit("forceLogout", username);
   });
 });
 
