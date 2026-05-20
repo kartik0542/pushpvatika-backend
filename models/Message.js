@@ -30,6 +30,25 @@ const messageSchema = new mongoose.Schema({
     type: String,
     default: null,
   },
+  // Read receipts add kiya
+  seenBy: [
+    {
+      username: String,
+      seenAt: { type: Date, default: Date.now },
+    },
+  ],
+  isPinned: {
+    type: Boolean,
+    default: false,
+  },
+  pinnedBy: {
+    type: String,
+    default: null,
+  },
+  pinnedAt: {
+    type: Date,
+    default: null,
+  },
   createdAt: {
     type: Date,
     default: Date.now,
