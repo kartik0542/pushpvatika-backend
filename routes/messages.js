@@ -195,7 +195,7 @@ router.post("/seen", authMiddleware, async (req, res) => {
     // Sirf wo messages jisme ye user already seen nahi hai
     const messagesToUpdate = await Message.find({
       username: { $ne: username },
-      "seenBy.username": { $ne: username }, // ← Ye duplicate rok raha hai
+      "seenBy.username": { $ne: username },
     });
 
     const updatedIds = messagesToUpdate.map((m) => String(m._id));
@@ -204,10 +204,14 @@ router.post("/seen", authMiddleware, async (req, res) => {
       return res.status(200).json({ message: "Already seen", updatedIds: [] });
     }
 
-    await Message.updateMany(
-      { _id: { $in: updatedIds } },
-      { $addToSet: { seenBy: { username, seenAt: new Date() } } }, // ← $push ki jagah $addToSet
-    );
+    // $push ki jagah direct set karo
+    for (const id of updatedIds) {
+      await Message.findByIdAndUpdate(id, {
+        $push: {
+          seenBy: { username, seenAt: new Date() },
+        },
+      });
+    }
 
     res.status(200).json({ message: "Seen updated", updatedIds });
   } catch (error) {
