@@ -192,25 +192,26 @@ router.post("/seen", authMiddleware, async (req, res) => {
 
     const username = req.user.username;
 
-    // Sirf wo messages jisme ye user already seen nahi hai
+    // Sirf wo messages fetch karo jisme username seen nahi hai
     const messagesToUpdate = await Message.find({
       username: { $ne: username },
       "seenBy.username": { $ne: username },
     });
 
-    const updatedIds = messagesToUpdate.map((m) => String(m._id));
-
-    if (updatedIds.length === 0) {
+    if (messagesToUpdate.length === 0) {
       return res.status(200).json({ message: "Already seen", updatedIds: [] });
     }
 
-    // $push ki jagah direct set karo
-    for (const id of updatedIds) {
-      await Message.findByIdAndUpdate(id, {
-        $push: {
-          seenBy: { username, seenAt: new Date() },
-        },
-      });
+    const updatedIds = messagesToUpdate.map((m) => String(m._id));
+
+    // Ek ek karke update karo with double check
+    for (const msg of messagesToUpdate) {
+      const alreadySeen = msg.seenBy?.some((s) => s.username === username);
+      if (!alreadySeen) {
+        await Message.findByIdAndUpdate(msg._id, {
+          $push: { seenBy: { username, seenAt: new Date() } }
+        });
+      }
     }
 
     res.status(200).json({ message: "Seen updated", updatedIds });
