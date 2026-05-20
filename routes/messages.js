@@ -69,10 +69,6 @@ router.post(
 // Pin / Unpin Message (Admin only)
 router.patch("/:id/pin", authMiddleware, async (req, res) => {
   try {
-    if (!req.user.isAdmin) {
-      return res.status(403).json({ message: "Sirf admin pin kar sakta hai!" });
-    }
-
     const message = await Message.findById(req.params.id);
     if (!message) {
       return res.status(404).json({ message: "Message nahi mila" });
